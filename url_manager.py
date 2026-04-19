@@ -1,37 +1,36 @@
 # url_manager.py
-import json
 import os
+from pymongo import MongoClient
+from dotenv import load_dotenv
 
-URLS_FILE = "anime_urls.json"
+load_dotenv()
+
+MONGO_URI = os.getenv("MONGO_URI")
+client = MongoClient(MONGO_URI)
+db = client["anime_bot_db"]
+urls_collection = db["urls"]
 
 def load_urls():
-    """JSON fayldan URL lug'atini yuklash."""
-    if not os.path.exists(URLS_FILE):
-        return {}
-    with open(URLS_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-def save_urls(data):
-    """URL lug'atini JSON faylga saqlash."""
-    with open(URLS_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+    """URL'larni lug'at ko'rinishida qaytarish."""
+    urls = {}
+    for doc in urls_collection.find():
+        urls[doc["anime_name"]] = doc["url"]
+    return urls
 
 def get_url(anime_name):
     """Berilgan anime nomi uchun URL qaytarish."""
-    urls = load_urls()
-    return urls.get(anime_name)
+    doc = urls_collection.find_one({"anime_name": anime_name})
+    return doc["url"] if doc else None
 
 def set_url(anime_name, url):
     """Yangi URL qo'shish yoki mavjudini yangilash."""
-    urls = load_urls()
-    urls[anime_name] = url
-    save_urls(urls)
+    urls_collection.update_one(
+        {"anime_name": anime_name},
+        {"$set": {"url": url}},
+        upsert=True
+    )
 
 def delete_url(anime_name):
     """URL ni o'chirish."""
-    urls = load_urls()
-    if anime_name in urls:
-        del urls[anime_name]
-        save_urls(urls)
-        return True
-    return False
+    result = urls_collection.delete_one({"anime_name": anime_name})
+    return result.deleted_count > 0

@@ -98,7 +98,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     welcome_text = (
         "🎌 *Anime Qidiruv Bot* ga xush kelibsiz!\n\n"
         "Men sizga anime va personajlar haqida ingliz tilida ma'lumot beraman.\n\n"
-        "👇 Quyidagi tugmani bosing yoki istalgan chatda `@botusername` deb yozing:"
+        "👇 Quyidagi tugmani bosing yoki istalgan chatda `@Anime_Qidiruv_Bot` deb yozing:"
     )
     await update.message.reply_text(welcome_text, parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
 
